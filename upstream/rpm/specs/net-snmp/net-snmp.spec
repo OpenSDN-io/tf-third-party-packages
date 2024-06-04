@@ -1,19 +1,19 @@
 # use nestnmp_check 0 to speed up packaging by disabling 'make test'
-%{!?netsnmp_check: %global netsnmp_check 1}
+%{!?netsnmp_check: %global netsnmp_check 0}
 
 # Arches on which we need to prevent arch conflicts on net-snmp-config.h
 %global multilib_arches %{ix86} ia64 ppc ppc64 s390 s390x x86_64 sparc sparcv9 sparc64 aarch64
 
 # actual soname version
-%global soname  35
+%global soname  40
 
 Summary:    A collection of SNMP protocol tools and libraries
 Name:       net-snmp
-Version:    5.8
-Release:    20%{?dist}
+Version:    5.9.4
+Release:    5%{?dist}
 Epoch:      1
 
-License:    BSD
+License:    Net-SNMP and OpenSSL
 URL:        http://net-snmp.sourceforge.net/
 Source0:    https://downloads.sourceforge.net/project/net-snmp/net-snmp/%{version}/net-snmp-%{version}.tar.gz
 Source1:    net-snmp.redhat.conf
@@ -26,80 +26,72 @@ Source7:    net-snmp-tmpfs.conf
 Source8:    snmpd.service
 Source9:    snmptrapd.service
 Source10:   IETF-MIB-LICENSE.txt
-Patch1:     net-snmp-5.7.2-pie.patch
-Patch2:     net-snmp-5.8-dir-fix.patch
-Patch3:     net-snmp-5.8-multilib.patch
-Patch4:     net-snmp-5.8-test-debug.patch
-Patch5:     net-snmp-5.7.2-autoreconf.patch
-Patch6:     net-snmp-5.8-agentx-disconnect-crash.patch
-Patch7:     net-snmp-5.7.2-cert-path.patch
-Patch8:     net-snmp-5.8-cflags.patch
-Patch9:     net-snmp-5.8-Remove-U64-typedef.patch
-Patch10:    net-snmp-5.8-libnetsnmptrapd-against-MYSQL_LIBS.patch
-Patch11:    net-snmp-5.7.3-iterator-fix.patch
-Patch12:    net-snmp-5.8-autofs-skip.patch
-Patch13:    net-snmp-5.8-usage-exit.patch
-Patch14:    net-snmp-5.8-coverity.patch
-Patch15:    net-snmp-5.8-ipv6-clientaddr.patch
-Patch16:    net-snmp-5.8-agent-of-death.patch
-Patch17:    net-snmp-5.8-trapsink.patch
-Patch18:    net-snmp-5.8-flood-messages.patch
-Patch19:    net-snmp-5.8-v3-forward.patch
-Patch20:    net-snmp-5.8-sec-counter.patch
-Patch21:    net-snmp-5.8-proxy-getnext.patch
-Patch22:    net-snmp-5.8-dskTable-dynamic.patch
-Patch23:    net-snmp-5.8-expand-SNMPCONFPATH.patch
-Patch24:    net-snmp-5.8-duplicate-ipAddress.patch
-Patch25:    net-snmp-5.8-memory-reporting.patch
-Patch26:    net-snmp-5.8-man-page.patch
-Patch27:    net-snmp-5.8-ipAddress-faster-load.patch
-Patch28:    net-snmp-5.8-rpm-memory-leak.patch
-Patch29:    net-snmp-5.8-sec-memory-leak.patch
-Patch30:    net-snmp-5.8-aes-config.patch
-Patch31:    net-snmp-5.7.2-CVE-2020-15862.patch
-Patch32:    net-snmp-5.8-bulk.patch
-Patch33:    net-snmp-5.8-clientaddr-error-message.patch
-Patch34:    net-snmp-5.8-ipv6-disabled.patch
-Patch35:    net-snmp-5.8-empty-passphrase.patch
-Patch36:    net-snmp-5.8-asn-parse-nlength.patch
+
+Patch1:     net-snmp-5.9-pie.patch
+Patch2:     net-snmp-5.9-dir-fix.patch
+Patch3:     net-snmp-5.9-multilib.patch
+Patch4:     net-snmp-5.9-test-debug.patch
+Patch5:     net-snmp-5.7.2-cert-path.patch
+Patch6:     net-snmp-5.9-cflags.patch
+Patch7:     net-snmp-5.8-Remove-U64-typedef.patch
+Patch8:     net-snmp-5.7.3-iterator-fix.patch
+Patch9:     net-snmp-5.9-autofs-skip.patch
+Patch10:    net-snmp-5.9-coverity.patch
+Patch11:    net-snmp-5.8-expand-SNMPCONFPATH.patch
+Patch12:    net-snmp-5.8-duplicate-ipAddress.patch
+Patch13:    net-snmp-5.9-memory-reporting.patch
+Patch14:    net-snmp-5.8-man-page.patch
+Patch15:    net-snmp-5.8-ipAddress-faster-load.patch
+Patch16:    net-snmp-5.8-rpm-memory-leak.patch
+Patch17:    net-snmp-5.9-aes-config.patch
+Patch18:    net-snmp-5.8-clientaddr-error-message.patch
+Patch19:    net-snmp-5.9-intermediate-certs.patch
+Patch20:    net-snmp-5.9.1-remove-des.patch
+Patch21:    net-snmp-libs-misunderstanding.patch
+Patch22:    net-snmp-5.9-ipv6-disable-leak.patch
+Patch23:    net-snmp-5.9-rpmdb.patch
+Patch24:    net-snmp-5.9.4-autoconf.patch
+Patch25:    net-snmp-5.9.4-kernel-6.7.patch
 
 # Modern RPM API means at least EL6
 Patch101:   net-snmp-5.8-modern-rpm-api.patch
 
+#disable this patch due compatibility issues
+Patch102:   net-snmp-5.9-python3.patch
+
 Requires:        %{name}-libs%{?_isa} = %{epoch}:%{version}-%{release}
 Requires:        %{name}-agent-libs%{?_isa} = %{epoch}:%{version}-%{release}
-BuildRequires:   gcc
 # This is actually needed for the %%triggerun script but Requires(triggerun)
 # is not valid.  We can use %%post because this particular %%triggerun script
 # should fire just after this package is installed.
 %{?systemd_requires}
-BuildRequires: systemd
-
-BuildRequires:   bzip2-devel, elfutils-devel
+BuildRequires: make
+BuildRequires:   systemd
+BuildRequires:   gcc
+BuildRequires:   openssl-devel, bzip2-devel, elfutils-devel
 BuildRequires:   libselinux-devel, elfutils-libelf-devel, rpm-devel
 BuildRequires:   perl-devel, perl(ExtUtils::Embed), procps
 BuildRequires:   python3-devel, python3-setuptools
 BuildRequires:   chrpath
-%if 0%{?rhel} < 8
-BuildRequires: openssl-devel <= 1:1.0.2o
-BuildRequires: mysql-devel
-%else
-BuildRequires: compat-openssl10 <= 1:1.0.2o
-BuildRequires: compat-openssl10-debugsource <= 1:1.0.2o
-# TODO: contrail
-# provided by tf-dev-env w/o deps as it install
-# openssl-devel-1.1.1g that is incompatible
-#BuildRequires: mariadb-connector-c-devel
-%endif
-
+# BuildRequires:   mariadb-connector-c-devel
 # for netstat, needed by 'make test'
 BuildRequires:   net-tools
 # for make test
+BuildRequires:   perl(:VERSION) >= 5.6
+BuildRequires:   perl(AutoLoader)
+BuildRequires:   perl(blib)
+BuildRequires:   perl(Carp)
+BuildRequires:   perl(DynaLoader)
+BuildRequires:   perl(Exporter)
+BuildRequires:   perl(overload)
+BuildRequires:   perl(strict)
 BuildRequires:   perl(TAP::Harness)
+BuildRequires:   perl(vars)
+BuildRequires:   perl(warnings)
 %ifnarch s390 s390x ppc64le
 BuildRequires:   lm_sensors-devel >= 3
 %endif
-BuildRequires:   autoconf, automake
+BuildRequires:   autoconf, automake, mysql-devel
 
 %description
 SNMP (Simple Network Management Protocol) is a protocol used for
@@ -113,20 +105,9 @@ documentation, etc.
 You will probably also want to install the net-snmp-utils package,
 which contains NET-SNMP utilities.
 
-%package python
-Group: Development/Libraries
-Summary: The Python 'netsnmp' module for the Net-SNMP
-Requires: %{name}-libs = %{epoch}:%{version}-%{release}
-
-%description python
-The 'netsnmp' module provides a full featured, tri-lingual SNMP (SNMPv3,
-SNMPv2c, SNMPv1) client API. The 'netsnmp' module internals rely on the
-Net-SNMP toolkit library.
-
 %package utils
 Summary:  Network management utilities using SNMP, from the NET-SNMP project
 Requires: %{name}-libs%{?_isa} = %{epoch}:%{version}-%{release}
-BuildRequires: gcc
 
 %description utils
 The net-snmp-utils package contains various utilities for use with the
@@ -141,11 +122,12 @@ Summary:  The development environment for the NET-SNMP project
 Requires: %{name}-libs%{?_isa} = %{epoch}:%{version}-%{release}
 Requires: %{name}-agent-libs%{?_isa} = %{epoch}:%{version}-%{release}
 Requires: elfutils-devel, rpm-devel, elfutils-libelf-devel, openssl-devel
+Requires: redhat-rpm-config
 %ifnarch s390 s390x ppc64le
 Requires: lm_sensors-devel
 %endif
 # pull perl development libraries, net-snmp agent libraries may link to them
-Requires: perl-devel%{?_isa}, gcc
+Requires: perl-devel%{?_isa}
 
 %description devel
 The net-snmp-devel package contains the development libraries and
@@ -157,23 +139,39 @@ applications for use with the NET-SNMP project's network management
 tools. You'll also need to have the net-snmp and net-snmp-utils
 packages installed.
 
+%package perl-module
+Summary:       The perl NET-SNMP module
+Requires:      %{name}-libs%{?_isa} = %{epoch}:%{version}-%{release}, perl-interpreter
+BuildRequires: perl-interpreter
+BuildRequires: perl-generators
+
+%description perl-module
+The net-snmp-perl package contains the perl files to use SNMP from within
+Perl.
+
+Install the net-snmp-perl package, if you want to use SNMP with perl.
+	
+
 %package perl
-Summary:       The perl NET-SNMP module and the mib2c tool
+Summary:       The perl-based utilities and the mib2c tool
 Requires:      %{name}-libs%{?_isa} = %{epoch}:%{version}-%{release}, perl-interpreter
 Requires:      %{name}-agent-libs%{?_isa} = %{epoch}:%{version}-%{release}
+Requires:      %{name}-devel%{?_isa} = %{epoch}:%{version}-%{release}
 BuildRequires: perl-interpreter
 BuildRequires: perl-generators
 
 %description perl
-The net-snmp-perl package contains the perl files to use SNMP from within
-Perl.
+The net-snmp-perl package contains the utilities written in perl.
 
-Install the net-snmp-perl package, if you want to use mib2c or SNMP 
-with perl.
+Install the net-snmp-perl package, if you want to use mib2c or other
+perl utilities. Use the net-snmp-perl-module package instead to get the
+SNMP perl module.
 
 %package gui
 Summary:  An interactive graphical MIB browser for SNMP
-Requires: perl-Tk, net-snmp-perl%{?_isa} = %{epoch}:%{version}-%{release}
+Requires: perl-Tk, %{name}-perl-module%{?_isa} = %{epoch}:%{version}-%{release}
+BuildRequires: perl-interpreter
+BuildRequires: perl-generators
 
 %description gui
 The net-snmp-gui package contains tkmib utility, which is a graphical user 
@@ -193,16 +191,37 @@ binaries and applications.
 %package agent-libs
 Summary:   The NET-SNMP runtime agent libraries
 # the libs link against libperl.so:
-Requires:  perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
 Requires:  %{name}-libs%{?_isa} = %{epoch}:%{version}-%{release}
 
 %description agent-libs
 The net-snmp-agent-libs package contains the runtime agent libraries for shared
 binaries and applications.
 
+%package -n python3-net-snmp
+%{?python_provide:%python_provide python3-net-snmp}
+# Remove before F30
+Provides:  %{name}-python = %{version}-%{release}
+Provides:  %{name}-python%{?_isa} = %{version}-%{release}
+Obsoletes: %{name}-python < %{version}-%{release}
+Summary:   The Python 'netsnmp' module for the Net-SNMP
+Requires:  %{name}-libs%{?_isa} = %{epoch}:%{version}-%{release}
+
+%description -n python3-net-snmp
+The 'netsnmp' module provides a full featured, tri-lingual SNMP (SNMPv3, 
+SNMPv2c, SNMPv1) client API. The 'netsnmp' module internals rely on the
+Net-SNMP toolkit library.
+
 %prep
 %setup -q
 cp %{SOURCE10} .
+
+wget http://ftp.gnu.org/gnu/autoconf/autoconf-2.71.tar.gz
+tar -xzf autoconf-2.71.tar.gz
+pushd autoconf-2.71
+./configure --prefix=/usr/local
+make
+make install
+popd
 
 %ifnarch ia64
 %patch1 -p1 -b .pie
@@ -211,52 +230,37 @@ cp %{SOURCE10} .
 %patch2 -p1 -b .dir-fix
 %patch3 -p1 -b .multilib
 %patch4 -p1
-%patch5 -p1 -b .autoreconf
-%patch6 -p1 -b .agentx-disconnect-crash
-%patch7 -p1 -b .cert-path
-%patch8 -p1 -b .cflags
-%patch9 -p1 -b .u64-remove
-%patch10 -p1 -b .perlfix
-%patch11 -p1 -b .iterator-fix
-%patch12 -p1 -b .autofs-skip
-%patch13 -p1 -b .usage-fix
-%patch14 -p1 -b .coverity
-%patch15 -p1 -b .ipv6-clientaddr
-%patch16 -p1 -b .agent-of-death
-%patch17 -p1 -b .trapsink
-%patch18 -p1 -b .flood-messages
-%patch19 -p1 -b .v3-forward
-%patch20 -p1 -b .sec-counter
-%patch21 -p1 -b .proxy-getnext
-%patch22 -p1 -b .dskTable-dynamic
-%patch23 -p1 -b .expand-SNMPCONFPATH
-%patch24 -p1 -b .duplicate-ipAddress
-%patch25 -p1 -b .memory-reporting
-%patch26 -p1 -b .man-page
-%patch27 -p1 -b .ipAddress-faster-load
-%patch28 -p1 -b .rpm-memory-leak
-%patch29 -p1 -b .sec-memory-leak
-%patch30 -p1 -b .aes-config
-%patch31 -p1 -b .CVE-2020-15862
-%patch32 -p1 -b .bulk
-%patch33 -p1 -b .clientaddr-error-message
-%patch34 -p1 -b .ipv6-disabled
-%patch35 -p1 -b .empty-passphrase
-%patch36 -p1 -b .asn-parse-nlength
+%patch5 -p1 -b .cert-path
+%patch6 -p1 -b .cflags
+%patch7 -p1 -b .u64-remove
+%patch8 -p1 -b .iterator-fix
+%patch9 -p1 -b .autofs-skip
+%patch10 -p1 -b .coverity
+%patch11 -p1 -b .expand-SNMPCONFPATH
+%patch12 -p1 -b .duplicate-ipAddress
+%patch13 -p1 -b .memory-reporting
+%patch14 -p1 -b .man-page
+%patch15 -p1 -b .ipAddress-faster-load
+%patch16 -p1 -b .rpm-memory-leak
+%patch17 -p1 -b .aes-config
+%patch18 -p1 -b .clientaddr-error-message
+%patch19 -p1 -b .intermediate-certs
+%patch20 -p1 -b .remove-des
+%patch21 -p1
+%patch22 -p1 -b .ipv6-disable-leak
+%patch23 -p1 -b .rpmdbpatch
+%patch24 -p1 
+%patch25 -p1 -b .kernel-6.7
 
 %patch101 -p1 -b .modern-rpm-api
+%patch102 -p1
 
-%ifarch sparc64 s390 s390x
 # disable failing test - see https://bugzilla.redhat.com/show_bug.cgi?id=680697
 rm testing/fulltests/default/T200*
-%endif
 
 %build
 
 # Autoreconf to get autoconf 2.69 for ARM (#926223)
-echo "DBG"
-env
-
 autoreconf
 
 MIBS="host agentx smux \
@@ -272,8 +276,6 @@ MIBS="host agentx smux \
 MIBS="$MIBS ucd-snmp/lmsensorsMib"
 %endif
 
-RPM_OPT_FLAGS="$RPM_OPT_FLAGS $LDFLAGS"
-echo "DBG: RPM_OPT_FLAGS=$RPM_OPT_FLAGS"
 %configure \
     --disable-static --enable-shared \
     --enable-as-needed \
@@ -283,9 +285,10 @@ echo "DBG: RPM_OPT_FLAGS=$RPM_OPT_FLAGS"
     --enable-local-smux \
     --enable-mfd-rewrites \
     --enable-ucd-snmp-compatibility \
+    --disable-des \
     --sysconfdir=%{_sysconfdir} \
-    --with-cflags="$RPM_OPT_FLAGS" \
-    --with-ldflags="-Wl,-z,relro -Wl,-z,now -lm" \
+    --with-cflags="$RPM_OPT_FLAGS -fPIE" \
+    --with-ldflags="$RPM_LD_FLAGS -lm" \
     --with-logfile="/var/log/snmpd.log" \
     --with-mib-modules="$MIBS" \
     --with-mysql \
@@ -298,7 +301,8 @@ echo "DBG: RPM_OPT_FLAGS=$RPM_OPT_FLAGS"
     --with-systemd \
     --with-temp-file-pattern=/run/net-snmp/snmp-tmp-XXXXXX \
     --with-transports="DTLSUDP TLSTCP" \
-    --with-sys-contact="root@localhost" <<EOF
+    --with-sys-contact="root@localhost" \
+    --without-pcre <<EOF
 EOF
 
 # store original libtool file, we will need it later
@@ -308,23 +312,14 @@ sed -i 's|^hardcode_libdir_flag_spec=.*|hardcode_libdir_flag_spec=""|g' libtool
 sed -i 's|^runpath_var=LD_RUN_PATH|runpath_var=DIE_RPATH_DIE|g' libtool
 
 # the package is not %%_smp_mflags safe
-# Patch for UBI8
-echo "DBG: LDFLAGS=$LDFLAGS"
-echo "DBG: LIBRARY_PATH=$LIBRARY_PATH"
-echo "DBG: C_INCLUDE_PATH=$C_INCLUDE_PATH"
-echo "DBG: CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH"
-LDFLAGS="$LDFLAGS" \
-LIBRARY_PATH="$LIBRARY_PATH" \
-C_INCLUDE_PATH="$C_INCLUDE_PATH" \
-CPLUS_INCLUDE_PATH="$CPLUS_INCLUDE_PATH" \
-  make
+%{__make}
 
 # remove rpath from compiled perl libs
 find perl/blib -type f -name "*.so" -print -exec chrpath --delete {} \;
 
 # compile python module
 pushd python
-%{__python} setup.py --basedir="../" build
+%{__python3} setup.py --basedir="../" build
 popd
 
 
@@ -370,6 +365,7 @@ rm -f %{buildroot}/%{_mandir}/man1/fixproc*
 rm -f %{buildroot}/%{_bindir}/ipf-mod.pl
 rm -f %{buildroot}/%{_libdir}/*.la
 rm -f %{buildroot}/%{_libdir}/libsnmp*
+rm -f %{buildroot}/%{_libdir}/perl5/vendor_perl/Bundle/MakefileSubs.pm
 
 # remove special perl files
 find %{buildroot} -name perllocal.pod \
@@ -385,7 +381,7 @@ install -m 644 local/mib2c.*.conf %{buildroot}%{_datadir}/snmp
 
 # install python module
 pushd python
-%{__python} setup.py --basedir=.. install -O1 --skip-build --root $RPM_BUILD_ROOT
+%{__python3} setup.py --basedir=.. install -O1 --skip-build --root %{buildroot} 
 popd
 
 find %{buildroot} -name '*.so' | xargs chmod 0755
@@ -401,10 +397,6 @@ done
 
 # remove executable bit from documentation samples
 chmod 644 local/passtest local/ipf-mod.pl
-
-# dirty hack for #603243, until it's fixed properly upstream
-install -m 755 -d %{buildroot}/usr/include/net-snmp/agent/util_funcs
-install -m 644  agent/mibgroup/util_funcs/*.h %{buildroot}/usr/include/net-snmp/agent/util_funcs
 
 # systemd stuff
 install -m 755 -d %{buildroot}/%{_tmpfilesdir}
@@ -423,6 +415,7 @@ cp -f libtool.orig libtool
 chmod 755 local/passtest
 
 LD_LIBRARY_PATH=%{buildroot}/%{_libdir} make test
+
 %endif
 
 
@@ -476,10 +469,17 @@ LD_LIBRARY_PATH=%{buildroot}/%{_libdir} make test
 
 %files devel
 %{_libdir}/lib*.so
-/usr/include/*
+%{_libdir}/pkgconfig/*
+%{_includedir}/*
 %attr(0644,root,root) %{_mandir}/man3/*.3.*
 %attr(0755,root,root) %{_bindir}/net-snmp-config*
 %attr(0644,root,root) %{_mandir}/man1/net-snmp-config*.1.*
+
+%files perl-module
+%attr(0644,root,root) %{_mandir}/man3/*.3pm.*
+%{perl_vendorarch}/*SNMP*
+%{perl_vendorarch}/auto/*SNMP*
+%{perl_vendorarch}/auto/Bundle/*SNMP*
 
 %files perl
 %{_bindir}/mib2c-update
@@ -492,17 +492,12 @@ LD_LIBRARY_PATH=%{buildroot}/%{_libdir} make test
 %{_datadir}/snmp/*.pl
 %{_bindir}/traptoemail
 %attr(0644,root,root) %{_mandir}/man[15]/mib2c*
-%attr(0644,root,root) %{_mandir}/man3/*.3pm.*
 %attr(0644,root,root) %{_mandir}/man1/traptoemail*.1*
 %attr(0644,root,root) %{_mandir}/man1/snmp-bridge-mib.1*
-%{perl_vendorarch}/*SNMP*
-%{perl_vendorarch}/auto/*SNMP*
-%{perl_vendorarch}/auto/Bundle/*SNMP*
-%{perl_vendorarch}/Bundle/MakefileSubs.pm
 
-%files python
-%doc python/README
-%{python_sitearch}/*
+%files -n python3-net-snmp
+%doc README
+%{python3_sitearch}/*
 
 %files gui
 %{_bindir}/tkmib
@@ -526,84 +521,249 @@ LD_LIBRARY_PATH=%{buildroot}/%{_libdir} make test
 %{_libdir}/libnetsnmptrapd*.so.%{soname}*
 
 %changelog
-* Tue Jan 05 2021 Josef Ridky <jridky@redhat.com> - 1:5.8-20
-- fix issue with parsing of long traps (#1912242)
-- modify fix for #1877375
+* Tue Mar 12 2024 Josef Ridky <jridky@redhat.com> - 1:5.9.4-5
+- Fix parsing issue for kernel 6.7+ (#2266893)
 
-* Tue Dec 01 2020 Josef Ridky <jridky@redhat.com> - 1:5.8-19
-- revert permission of config files to 600 (#1601060)
+* Fri Feb 16 2024 Josef Ridky <jridky@redhat.com> - 1:5.9.4-4
+- Autoconf upgrade (#2256768)
+
+* Thu Jan 25 2024 Fedora Release Engineering <releng@fedoraproject.org> - 1:5.9.4-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_40_Mass_Rebuild
+
+* Sun Jan 21 2024 Fedora Release Engineering <releng@fedoraproject.org> - 1:5.9.4-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_40_Mass_Rebuild
+
+* Wed Aug 16 2023 Josef Ridky <jridky@redhat.com> - 1:5.9.4-1
+- New upstream release 5.9.4 (#2184202)
+
+* Mon Aug 14 2023 Josef Ridky <jridky@redhat.com> - 1:5.9.3-8
+- Fix warning for RPM DB
+- split perl module into separate package that doesn't pull in gcc and
+  other build dependencies (thanks Chris Adams)
+- don't install MakefileSubs.pm - it's just needed at module build time
+  (thanks Chris Adams)
+
+* Tue Aug 01 2023 Josef Ridky <jridky@redhat.com> - 1:5.9.3-7
+- Sync fixes with RHEL
+- Fix sendmesg error code change for new kernel
+
+* Wed Jul 19 2023 Josef Ridky <jridky@redhat.com> - 1:5.9.3-6
+- Migrate to SPDX license format
+
+* Tue Jul 11 2023 Jitka Plesnikova <jplesnik@redhat.com> - 1:5.9.3-5
+- Perl 5.38 rebuild
+
+* Tue Jun 13 2023 Python Maint <python-maint@redhat.com> - 1:5.9.3-4
+- Rebuilt for Python 3.12
+
+* Fri May 19 2023 Petr Pisar <ppisar@redhat.com> - 1:5.9.3-3
+- Rebuild against rpm-4.19 (https://fedoraproject.org/wiki/Changes/RPM-4.19)
+
+* Thu Jan 19 2023 Fedora Release Engineering <releng@fedoraproject.org> - 1:5.9.3-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_38_Mass_Rebuild
+
+* Thu Aug 04 2022 Josef Ridky <jridky@redhat.com> - 1:5.9.3-1
+- New upstream release 5.9.3 (#2072230)
+
+* Fri Jul 22 2022 Fedora Release Engineering <releng@fedoraproject.org> - 1:5.9.1-17
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_37_Mass_Rebuild
+
+* Mon Jun 13 2022 Python Maint <python-maint@redhat.com> - 1:5.9.1-16
+- Rebuilt for Python 3.11
+
+* Mon May 30 2022 Jitka Plesnikova <jplesnik@redhat.com> - 1:5.9.1-15
+- Perl 5.36 rebuild
+
+* Sat Jan 29 2022 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 1:5.9.1-14
+- Remove linker flags from Libs.private (#2043092)
+
+* Thu Jan 20 2022 Fedora Release Engineering <releng@fedoraproject.org> - 1:5.9.1-13
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_36_Mass_Rebuild
+
+* Mon Oct 04 2021 Josef Ridky <jridky@redhat.com> - 1:5.9.1-12
+- fix FTBFS of ERR_get_error (#2008781)
+
+* Wed Sep 15 2021 Sahana Prasad <sahana@redhat.com> - 1:5.9.1-11
+- Rebuilt with OpenSSL 3.0.0
+
+* Wed Sep 15 2021 Josef Ridky <jridky@redhat.com> - 1:5.9.1-10
+- Remove ERR_GET_FUNC from code (#2004351)
+
+* Tue Sep 14 2021 Sahana Prasad <sahana@redhat.com> - 1:5.9.1-9
+- Rebuilt with OpenSSL 3.0.0
+
+* Wed Sep 01 2021 Josef Ridky <jridky@redhat.com> - 1:5.9.1-8
+- fix FTBFS (#1999475)
+
+* Thu Jul 29 2021 Josef Ridky <jridky@redhat.com> - 1:5.9.1-7
+- revert cflags modification in net-snmp-config as was reverted in upstream
+  and add proper dependency to net-snmp-devel sub-package (#1544527)
+
+* Thu Jul 22 2021 Fedora Release Engineering <releng@fedoraproject.org> - 1:5.9.1-6
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_35_Mass_Rebuild
+
+* Mon Jul 19 2021 Josef Ridky <jridky@redhat.com> - 1:5.9.1-5
+- fix UseNumeric in Python library (#1970937)
+
+* Fri Jun 04 2021 Python Maint <python-maint@redhat.com> - 1:5.9.1-4
+- Rebuilt for Python 3.10
+
+* Tue Jun 01 2021 Josef Ridky <jridky@redhat.com> - 1:5.9.1-3
+- disable DES for F35+
+
+* Tue Jun 01 2021 Josef Ridky <jridky@redhat.com> - 1:5.9.1-2
+- restore DES for F34 and F33
+
+* Wed May 26 2021 Josef Ridky <jridky@redhat.com> - 1:5.9.1-1
+- New upstream release 5.9.1 (#1946399)
+- remove DES support
+
+* Fri May 21 2021 Jitka Plesnikova <jplesnik@redhat.com> - 1:5.9-10
+- Perl 5.34 rebuild
+
+* Mon Mar 15 2021 Josef Ridky <jridky@redhat.com> - 1:5.9-9
+- fix issue with parsing IPv4 address twice
+
+* Tue Mar 02 2021 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 1:5.9-8
+- Rebuilt for updated systemd-rpm-macros
+  See https://pagure.io/fesco/issue/2583.
+
+* Thu Feb 04 2021 Josef Ridky <jridky@redhat.com> - 1:5.9-7
+- remove file with unsupported license
+- use make and make install macros
+
+* Thu Jan 28 2021 Josef Ridky <jridky@redhat.com> - 1:5.9-6
+- add support for digests detected from ECC certificates
+- add support for intermediate certificates
+- fix crash caused by small buffer size
+
+* Tue Jan 26 2021 Fedora Release Engineering <releng@fedoraproject.org> - 1:5.9-5
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_34_Mass_Rebuild
+
+* Mon Jan 18 2021 Josef Ridky <jridky@redhat.com> - 1:5.9-4
+- fix issue with parsing long trap headers (#1912725)
 - fix error message when the address specified by clientaddr option
-  is wrong or cannot be bound (#1877375)
-- log error with /proc/net/if_inet6 only when IPv6 is enabled (#1824367)
-- fix issue with quoting empty passphrase (#1817225)
+  is wrong or cannot be bound
+- fix issue with quoting empty passphrase
 
-* Wed Nov 11 2020 Josef Ridky <jridky@redhat.com> - 1:5.8-18
-- fix CVE-2020-15862 (#1875497)
-- fix bulk responses for invalid PID (#1817190)
+* Wed Nov 18 2020 Josef Ridky <jridky@redhat.com> - 1:5.9-3
+- update net-snmp-tmpfs.conf for /var/run to /run (#1893471)
 
-* Tue Aug 11 2020 Josef Ridky <jridky@redhat.com> - 1:5.8-17
-- add math library in LDFLAGS (#1846252)
+* Tue Sep 01 2020 Josef Ridky <jridky@redhat.com> - 1:5.9-2
+- Disable pcre binding
+- Add support for available memory report
 
-* Thu Jul 16 2020 Josef Ridky <jridky@redhat.com> - 1:5.8-16
-- remove file due licensing issues (#1690936)
+* Mon Aug 17 2020 Josef Ridky <jridky@redhat.com> - 1:5.9-1
+- New upstream release 5.9
 
-* Wed Jun 10 2020 Josef Ridky <jridky@redhat.com> - 1:5.8-15
-- proxied OIDs unspecified in proxy statement in snmpd.conf (#1658134)
-- UCD-SNMP-MIB::dskTable doesn't update dynamically (#1658185)
-- expand SNMPCONFPATH variable (#1660146)
-- remove file with Apple license (#1690936)
-- log meningful message on duplicate IP address (#1692286)
-- memory reporting adjustment (#1695497 and #1766521)
-- fix typos in man page (#1700262)
-- speedup ipAddressTable loading(#1700391)
-- fix memory leak when shut down librpm (#1763008)
-- services starts after network-online.target (#1775304)
-- add missing part of memory leak patch (#1829860)
-- add support for AES192 and AES256 (#1846252)
+* Tue Aug 04 2020 Josef Ridky <jridky@redhat.com> - 1:5.8-25
+- link math library to fix FTBFS for hplip (#1863855)
 
-* Mon Mar 16 2020 Josef Ridky <jridky@redhat.com> - 1:5.8-14
-- fix double free or corruption error when freeing security context (#1809077)
-- remove deprecated CFLAG
+* Tue Jul 28 2020 Fedora Release Engineering <releng@fedoraproject.org> - 1:5.8-24
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_33_Mass_Rebuild
 
-* Mon Feb 17 2020 Josef Ridky <jridky@redhat.com> - 1:5.8-13
-- fix double free or corruption error (#1726373)
+* Tue Jul 07 2020 Josef Ridky <jridky@redhat.com> - 1:5.8-23
+- change /var/run/net-snmp to /run/net-snmp (#1737631)
 
-* Wed Nov 06 2019 Josef Ridky <jridky@redhat.com> - 1:5.8-12
-- fix tmpfiles path (#1710784)
+* Tue Jul 07 2020 Josef Ridky <jridky@redhat.com> - 1:5.8-22
+- proxied OIDs unspecified in proxy statement in snmpd.conf
+- UCD-SNMP-MIB::dskTable doesn't update dynamically
+- expand SNMPCONFPATH variable
+- log meningful message on duplicate IP address
+- memory reporting adjustment
+- fix typos in man page
+- speedup ipAddressTable loading
+- fix memory leak when shut down librpm
+- services starts after network-online.target
+- add missing part of memory leak patch
+- add support for AES192 and AES256
+- fix net-snmp-config wrapper script (#1815984)
 
-* Tue Oct 15 2019 Jiri Kucera <jkucera@redhat.com> - 1:5.8-11
-- fix issue with flood messages (#1719350)
+* Mon Jun 22 2020 Jitka Plesnikova <jplesnik@redhat.com> - 1:5.8-21
+- Perl 5.32 rebuild
 
-* Thu Jun 27 2019 Josef Ridky <jridky@redhat.com> - 1:5.8-10
-- fix trapsink port issue (#1677192)
+* Tue May 26 2020 Miro Hrončok <mhroncok@redhat.com> - 1:5.8-20
+- Rebuilt for Python 3.9
 
-* Fri May 24 2019 Josef Ridky <jridky@redhat.com> - 1:5.8-9
-- rebuild for autoconf
+* Thu Apr 09 2020 Josef Ridky <jridky@redhat.com> -1:5.8-19
+- update skip_autofs patch (#1810104)
+- exit snmpd after snmpd -h command
+- fix issues found by coverity scan
+- fix issue with flood messages
+- fix double free or corruption error when freeing security context
 
-* Tue May 07 2019 Josef Ridky <jridky@redhat.com> - 1:5.8-8
-- fix daemon crash on resend request (#1694047)
+* Tue Mar 24 2020 Petr Pisar <ppisar@redhat.com> - 1:5.8-18
+- Build-require Perl dependencies for running the tests
 
-* Thu Feb 07 2019 Josef Ridky <jridky@redhat.com> - 1:5.8-7
-- fix address assigning for IPv6 clientaddr option (#1672668)
+* Wed Feb 26 2020 Josef Ridky <jridky@redhat.com> - 1:5.8-17
+- fix config error with RPM library (#1807274)
 
-* Wed Dec 05 2018 Josef Ridky <jridky@redhat.com> - 1:5.8-6
-- fix discovered issues from coverity scan (#1602630)
+* Mon Feb 17 2020 Josef Ridky <jridky@redhat.com> - 1:5.8-16
+- set net-snmp-devel as requirement for net-snmp-perl
 
-* Thu Oct 04 2018 Josef Ridky <jridky@redhat.com> - 1:5.8-5
-- exit snmpd after snmpd -h command (#1634811)
+* Wed Jan 29 2020 Fedora Release Engineering <releng@fedoraproject.org> - 1:5.8-15
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_32_Mass_Rebuild
 
-* Tue Sep 25 2018 Josef Ridky <jridky@redhat.com> - 1:5.8-4
-- fix annocheck distro flag failures (#1624151)
+* Thu Oct 03 2019 Miro Hrončok <mhroncok@redhat.com> - 1:5.8-14
+- Rebuilt for Python 3.8.0rc1 (#1748018)
 
-* Tue Sep 04 2018 Josh Boyer <jwboyer@redhat.com> - 1:5.8-3
-- Change gcc Requires to BuildRequires (#1625189)
+* Thu Sep 19 2019 Josef Ridky <jridky@redhat.com> - 1:5.8-13
+- Fix snmpv3 trap forwarding (#1753506)
 
-* Mon Aug 13 2018 Josef Ridky <jridky@redhat.com> - 1:5.8-2
-- fix default configuration file (#1589480 and #1594147)
-- modify permissions for config files (#1601060)
+* Mon Aug 19 2019 Miro Hrončok <mhroncok@redhat.com> - 1:5.8-12
+- Rebuilt for Python 3.8
 
-* Thu Aug 09 2018 Josef Ridky <jridky@redhat.com> - 1:5.8-1
-- remove python package and update to the last upstream version (#1584510)
+* Thu Jul 25 2019 Fedora Release Engineering <releng@fedoraproject.org> - 1:5.8-11
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_31_Mass_Rebuild
+
+* Fri Jun 28 2019 Josef Ridky <jridky@redhat.com> - 1:5.8-10
+- remove file with unsupported license
+- fix daemon crash on resend request (#1663027)
+- fix issue with trapsink default port
+
+* Thu May 30 2019 Jitka Plesnikova <jplesnik@redhat.com> - 1:5.8-7
+- Perl 5.30 rebuild
+
+* Thu Feb 07 2019 Josef Ridky <jridky@redhat.com> - 1:5.8-6
+- fix IPv6 address assignment for clientaddr option (#1673272)
+
+* Fri Feb 01 2019 Fedora Release Engineering <releng@fedoraproject.org> - 1:5.8-5
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_30_Mass_Rebuild
+
+* Mon Jan 14 2019 Björn Esser <besser82@fedoraproject.org> - 1:5.8-4
+- Rebuilt for libcrypt.so.2 (#1666033)
+
+* Tue Nov 27 2018 Josef Ridky <jridky@redhat.com> - 1:5.8-3
+- backport memory leak fixes from upstream
+- add fPIE to CFLAGS (#1543853)
+- use default LDFLAGS
+
+* Mon Jul 23 2018 Josef Ridky <jridky@redhat.com> - 1:5.8-2
+- fix unresoved error with mysql functions
+- implement changes to announce soname changes
+
+* Wed Jul 18 2018 Josef Ridky <jridky@redhat.com> - 1:5.8-1
+- New upstream release 5.8
+- remove APSL downstream patch due this copyright is already 
+  coveret by part 8 in COPYING file
+
+* Fri Jul 13 2018 Fedora Release Engineering <releng@fedoraproject.org> - 1:5.7.3-42
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_29_Mass_Rebuild
+
+* Sat Jul 07 2018 Miro Hrončok <mhroncok@redhat.com> - 1:5.7.3-41
+- Rebuilt for Python 3.7
+
+* Wed Jun 27 2018 Jitka Plesnikova <jplesnik@redhat.com> - 1:5.7.3-40
+- Perl 5.28 rebuild
+
+* Mon May 21 2018 Josef Ridky <jridky@redhat.com> - 1:5.7.3-39
+- python3 support draft
+
+* Mon May 21 2018 Josef Ridky <jridky@redhat.com> - 1:5.7.3-38
+- revert Python3 support
+
+* Tue Mar 27 2018 Josef Ridky <jridky@redhat.com> - 1:5.7.3-37
+- backport upstream patch for structure iterator 
 
 * Thu Mar 08 2018 Josef Ridky <jridky@redhat.com> - 1:5.7.3-36
 - CVE-2018-1000116 Heap corruption in snmp_pdu_parse (#1552844)

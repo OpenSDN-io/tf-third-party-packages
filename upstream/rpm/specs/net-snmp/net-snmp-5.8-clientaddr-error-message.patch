@@ -30,6 +30,6 @@ diff -ruNp a/snmplib/transports/snmpUDPIPv4BaseDomain.c b/snmplib/transports/snm
                      errno, strerror(errno)));
 +        NETSNMP_LOGONCE((LOG_ERR, "Cannot bind for clientaddr: %s\n",
 +                    strerror(errno)));
-         netsnmp_socketbase_close(t);
-         return 1;
+         goto err;
      }
+ 

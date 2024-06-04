@@ -1,0 +1,14 @@
+- hosts: localhost
+  roles:
+    - role: standard-test-beakerlib
+      tags:
+      - classic
+      tests:
+      - integration-tests
+      required_packages:
+      - python3
+      - systemd
+      - iproute
+      - python3-pyroute2
+      - net-snmp
+      - net-snmp-utils

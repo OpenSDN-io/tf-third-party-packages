@@ -16,47 +16,47 @@
 arch=`arch`
 echo $arch | grep -q i.86
 if [ $? -eq 0 ] ; then
-    net-snmp-config-i386 $*
+    net-snmp-config-i386 "$@"
     exit 0
 fi
 if [ "$arch" = "ia64" ] ; then
-    net-snmp-config-ia64 $*
+    net-snmp-config-ia64 "$@"
     exit 0
 fi
 if [ "$arch" = "ppc" ] ; then
-    net-snmp-config-ppc $*
+    net-snmp-config-ppc "$@"
     exit 0
 fi
 if [ "$arch" = "ppc64" ] ; then
-    net-snmp-config-ppc64 $*
+    net-snmp-config-ppc64 "$@"
     exit 0
 fi
 if [ "$arch" = "s390" ] ; then
-    net-snmp-config-s390 $*
+    net-snmp-config-s390 "$@"
     exit 0
 fi
 if [ "$arch" = "s390x" ] ; then
-    net-snmp-config-s390x $*
+    net-snmp-config-s390x "$@"
     exit 0
 fi
 if [ "$arch" = "x86_64" ] ; then
-    net-snmp-config-x86_64 $*
+    net-snmp-config-x86_64 "$@"
     exit 0
 fi
 if [ "$arch" = "alpha" ] ; then
-    net-snmp-config-alpha $*
+    net-snmp-config-alpha "$@"
     exit 0
 fi
 if [ "$arch" = "sparc" ] ; then
-    net-snmp-config-sparc $*
+    net-snmp-config-sparc "$@"
     exit 0
 fi
 if [ "$arch" = "sparc64" ] ; then
-    net-snmp-config-sparc64 $*
+    net-snmp-config-sparc64 "$@"
     exit 0
 fi
 if [ "$arch" = "aarch64" ] ; then
-    net-snmp-config-aarch64 $*
+    net-snmp-config-aarch64 "$@"
     exit 0
 fi
 echo "Cannot determine architecture"

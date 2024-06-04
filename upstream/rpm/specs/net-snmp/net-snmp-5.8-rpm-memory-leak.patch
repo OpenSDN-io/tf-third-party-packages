@@ -1,6 +1,7 @@
-diff -urNp a/agent/mibgroup/host/data_access/swinst_rpm.c b/agent/mibgroup/host/data_access/swinst_rpm.c
---- a/agent/mibgroup/host/data_access/swinst_rpm.c	2020-06-10 14:32:43.330486233 +0200
-+++ b/agent/mibgroup/host/data_access/swinst_rpm.c	2020-06-10 14:35:46.672298741 +0200
+diff --git a/agent/mibgroup/host/data_access/swinst_rpm.c b/agent/mibgroup/host/data_access/swinst_rpm.c
+index 695c469..dd0e487 100644
+--- a/agent/mibgroup/host/data_access/swinst_rpm.c
++++ b/agent/mibgroup/host/data_access/swinst_rpm.c
 @@ -75,6 +75,9 @@ netsnmp_swinst_arch_init(void)
      snprintf( pkg_directory, SNMP_MAXPATH, "%s/Packages", dbpath );
      SNMP_FREE(rpmdbpath);
@@ -9,11 +10,12 @@ diff -urNp a/agent/mibgroup/host/data_access/swinst_rpm.c b/agent/mibgroup/host/
 +    rpmFreeRpmrc();
 +#endif
      if (-1 == stat( pkg_directory, &stat_buf )) {
-         snmp_log(LOG_ERR, "Can't find directory of RPM packages");
+         snmp_log(LOG_ERR, "Can't find directory of RPM packages\n");
          pkg_directory[0] = '\0';
-diff -urNp a/agent/mibgroup/host/hr_swinst.c b/agent/mibgroup/host/hr_swinst.c
---- a/agent/mibgroup/host/hr_swinst.c	2020-06-10 14:32:43.325486184 +0200
-+++ b/agent/mibgroup/host/hr_swinst.c	2020-06-10 14:36:44.423872418 +0200
+diff --git a/agent/mibgroup/host/hr_swinst.c b/agent/mibgroup/host/hr_swinst.c
+index 1f52733..ccf1cab 100644
+--- a/agent/mibgroup/host/hr_swinst.c
++++ b/agent/mibgroup/host/hr_swinst.c
 @@ -231,6 +231,9 @@ init_hr_swinst(void)
              snprintf(path, sizeof(path), "%s/packages.rpm", swi->swi_dbpath);
          path[ sizeof(path)-1 ] = 0;
