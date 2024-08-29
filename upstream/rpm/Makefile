@@ -44,7 +44,7 @@ clean: clean_srpms clean_rpms
 touch_all:
 	find . -exec touch {} +
 
-boost-1.53.0: RPMBUILD_FLAGS += --without=openmpi --without=mpich
+#boost-1.53.0: RPMBUILD_FLAGS += --without=openmpi --without=mpich
 
 $(SPEC_TARGETS): prep
 	@echo "contrail-third-party-packages: prepare sources for $@"
