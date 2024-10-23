@@ -1,5 +1,5 @@
 %define _noarch_libdir /usr/lib
-%define rel_ver 3.6.1
+%define rel_ver 3.9.2
 %define _relstr 0contrail0
 Summary: High-performance coordination service for distributed applications.
 Name: apache-zookeeper
@@ -15,7 +15,7 @@ Source3: zoo.cfg
 Source4: log4j.properties
 Source5: java.env
 BuildRoot: %{_tmppath}/%{name}-%{rel_ver}-%{release}-root
-BuildRequires: python2-devel,gcc,make,libtool,autoconf,cppunit-devel,maven,hostname
+BuildRequires: python3-devel,gcc,make,libtool,autoconf,cppunit-devel,maven,hostname
 Requires: logrotate, java, nc
 Requires(post): chkconfig initscripts
 Requires(pre): chkconfig initscripts

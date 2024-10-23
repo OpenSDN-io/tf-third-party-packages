@@ -1,25 +1,18 @@
-%define version 1.5.0
+%define version 1.6.1
 %define release 0contrail0
 Name:    librdkafka
-Version: %{version}
-Release: %{release}%{?dist}
+Version: 1.6.1
+Release: 0contrail0%{?dist}
 %define soname 1
 
 Summary: The Apache Kafka C library
 Group:   Development/Libraries/C and C++
 License: BSD-2-Clause
-URL:     https://github.com/edenhill/librdkafka
-Source:	 https://github.com/edenhill/%{name}/archive/v%{version}.tar.gz
+URL:     https://github.com/confluentinc/librdkafka
+Source:	 https://github.com/edenhill/librdkafka/archive/v%{version}.tar.gz
 
 BuildRequires: zlib-devel libstdc++-devel gcc >= 4.1 gcc-c++ cyrus-sasl-devel
-%if 0%{?rhel} >= 8
-BuildRequires: libzstd-devel
-%endif 
 BuildRoot: %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
-
-%if 0%{?rhel} >= 8
-%define CXXFLAGS  -Wno-error=implicit-function-declaration -Wno-implicit-function-declaration
-%endif
 
 %define _source_payload w9.gzdio
 %define _binary_payload w9.gzdio
@@ -31,13 +24,16 @@ librdkafka is the C/C++ client library implementation of the Apache Kafka protoc
 %package -n %{name}%{soname}
 Summary: The Apache Kafka C library
 Group:   Development/Libraries/C and C++
-Requires: zlib libstdc++ cyrus-sasl openssl-libs
-BuildRequires: python3
-%if 0%{?rhel} < 8
-BuildRequires: openssl-devel <= 1:1.0.2o
+Requires: zlib libstdc++ cyrus-sasl
+# openssl libraries were extract to openssl-libs in RHEL7
+%if 0%{?rhel} >= 7
+Requires: openssl-libs >= 1.0.2
+BuildRequires: openssl-devel >= 1.0.2 python3
 %else
-BuildRequires: compat-openssl10 <= 1:1.0.2o
-BuildRequires: compat-openssl10-debugsource <= 1:1.0.2o
+Requires: openssl
+# python34 is provided from epel-release, but that package needs to be installed
+# prior to rpmbuild working out these dependencies (such as from mock).
+BuildRequires: openssl-devel python34
 %endif
 
 %description -n %{name}%{soname}
@@ -61,7 +57,7 @@ using librdkafka.
 
 # --install-deps will install missing dependencies that are not available
 # through BuildRequires, such as libzstd, which will be linked statically.
-%configure --install-deps --disable-lz4-ext --CXXFLAGS="%{?CXXFLAGS}"
+%configure --install-deps --disable-lz4-ext
 
 %build
 cat config.log
@@ -88,11 +84,12 @@ rm -rf %{buildroot}
 %doc %{_docdir}/librdkafka/CONFIGURATION.md
 %doc %{_docdir}/librdkafka/INTRODUCTION.md
 %doc %{_docdir}/librdkafka/STATISTICS.md
+%doc %{_docdir}/librdkafka/CHANGELOG.md
 %doc %{_docdir}/librdkafka/LICENSES.txt
 
 %defattr(-,root,root)
-#%{_bindir}/rdkafka_example
-#%{_bindir}/rdkafka_performance
+#/usr/local/bin/rdkafka_example
+#%/usr/local/bin/rdkafka_performance
 
 
 %files -n %{name}-devel

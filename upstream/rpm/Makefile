@@ -48,7 +48,7 @@ touch_all:
 
 $(SPEC_TARGETS): prep
 	@echo "contrail-third-party-packages: prepare sources for $@"
-	spectool -g -R $(RPMBUILD_FLAGS) $(SPEC_DIR)/$@/$@.spec -C $(SPEC_DIR)/$@/
+	spectool -g $(RPMBUILD_FLAGS) $(SPEC_DIR)/$@/$@.spec -C $(SPEC_DIR)/$@/
 	echo "docker env: contrail-third-party-packages: make $@" ; \
 	echo "DBG: $@: BUILDDEP_FLAGS=$(BUILDDEP_FLAGS) BUILD_BASE=$(BUILD_BASE)" ; \
 	yum-builddep -y $(BUILDDEP_FLAGS) \
