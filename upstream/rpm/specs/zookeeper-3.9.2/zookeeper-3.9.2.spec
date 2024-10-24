@@ -38,6 +38,7 @@ implementing coordination services from scratch.
 %define _zookeeper_noarch_libdir %{_noarch_libdir}/zookeeper
 %define _maindir %{buildroot}%{_zookeeper_noarch_libdir}
 
+%global debug_package %{nil}
 %prep
 %setup -q -n apache-zookeeper-%{rel_ver}
 

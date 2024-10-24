@@ -51,7 +51,7 @@ librdkafka is the C/C++ client library implementation of the Apache Kafka protoc
 This package contains headers and libraries required to build applications
 using librdkafka.
 
-
+%global debug_package %{nil}
 %prep
 %setup -q -n %{name}-%{version}
 
