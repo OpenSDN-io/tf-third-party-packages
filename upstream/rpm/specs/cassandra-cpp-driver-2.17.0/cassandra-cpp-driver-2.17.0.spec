@@ -7,7 +7,7 @@
 
 Name:    cassandra-cpp-driver
 Epoch:   1
-Version: 2.17.1
+Version: 2.17.0
 Release: 1%{?dist}
 Summary: DataStax C/C++ Driver for Apache Cassandra and DataStax Products
 

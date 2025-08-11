@@ -11,7 +11,7 @@ License: BSD-2-Clause
 URL:     https://github.com/confluentinc/librdkafka
 Source:	 https://github.com/edenhill/librdkafka/archive/v%{version}.tar.gz
 
-BuildRequires: zlib-devel libstdc++-devel gcc >= 4.1 gcc-c++ cyrus-sasl-devel
+BuildRequires: zlib-devel libstdc++-devel gcc >= 4.1 gcc-c++ cyrus-sasl-devel libzstd-devel rapidjson-devel
 BuildRoot: %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 %define _source_payload w9.gzdio
@@ -26,15 +26,10 @@ Summary: The Apache Kafka C library
 Group:   Development/Libraries/C and C++
 Requires: zlib libstdc++ cyrus-sasl
 # openssl libraries were extract to openssl-libs in RHEL7
-%if 0%{?rhel} >= 7
 Requires: openssl-libs >= 1.0.2
-BuildRequires: openssl-devel >= 1.0.2 python3
-%else
-Requires: openssl
-# python34 is provided from epel-release, but that package needs to be installed
-# prior to rpmbuild working out these dependencies (such as from mock).
-BuildRequires: openssl-devel python34
-%endif
+BuildRequires: python3
+BuildRequires: openssl-devel >= 1.0.2
+
 
 %description -n %{name}%{soname}
 librdkafka is the C/C++ client library implementation of the Apache Kafka protocol, containing both Producer and Consumer support.
@@ -57,11 +52,11 @@ using librdkafka.
 
 # --install-deps will install missing dependencies that are not available
 # through BuildRequires, such as libzstd, which will be linked statically.
-%configure --install-deps --disable-lz4-ext
+%configure --install-deps --disable-lz4-ext --disable-c11threads --disable-zstd
 
 %build
 cat config.log
-make
+make HAVE_STRLCPY=0
 examples/rdkafka_example -X builtin.features
 
 %install

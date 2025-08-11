@@ -15,7 +15,7 @@ Source3: zoo.cfg
 Source4: log4j.properties
 Source5: java.env
 BuildRoot: %{_tmppath}/%{name}-%{rel_ver}-%{release}-root
-BuildRequires: python3-devel,gcc,make,libtool,autoconf,cppunit-devel,maven,hostname
+BuildRequires: python3-devel, gcc, make, libtool, autoconf, cppunit-devel, wget, tar, java-1.8.0-openjdk-devel, hostname
 Requires: logrotate, java, nc
 Requires(post): chkconfig initscripts
 Requires(pre): chkconfig initscripts
@@ -42,7 +42,14 @@ implementing coordination services from scratch.
 %prep
 %setup -q -n apache-zookeeper-%{rel_ver}
 
+# download and install maven
+wget https://dlcdn.apache.org/maven/maven-3/3.8.9/binaries/apache-maven-3.8.9-bin.tar.gz
+tar -xvzf apache-maven-3.8.9-bin.tar.gz -C /opt
+ln -s /opt/apache-maven-3.8.9 /opt/maven
+
 %build
+export M2_HOME=/opt/maven
+export PATH=$M2_HOME/bin:$PATH
 mvn clean -Pfull-build
 mvn install -Pfull-build -DskipTests
 
@@ -70,6 +77,7 @@ install -p -d -D -m 0755 %{buildroot}%{_datadir}/zookeeper
 
 %clean
 rm -rf %{buildroot}
+rm -rf /opt/apache-maven-3.8.9
 
 %files
 %defattr(-,root,root,-)
